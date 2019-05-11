@@ -9,57 +9,59 @@ class PlayDeckBloc extends Bloc<PlayDeckEvent, PlayDeckState> {
   PlayDeckState get initialState => PlayDeckUninit();
 
   @override
+  void onError(Object error, StackTrace st) {
+    print(error);
+  }
+
+  @override
   Stream<PlayDeckState> mapEventToState(
-      PlayDeckState currentState, PlayDeckEvent event) async* {
+      PlayDeckState curState, PlayDeckEvent event) async* {
     if (event is PlayDeckInit) {
       assert(!event.deckToPlay.flashcards.isEmpty);
-      final scoredFlashcards = event.deckToPlay.flashcards
-          .map((flashcard) =>
-              ScoredFlashcard(flashcard: flashcard, score: FlashcardScore.hard))
-          .toList();
-      final firstFlashcard = scoredFlashcards.removeAt(0);
+      final deck = event.deckToPlay;
+      final firstFlashcard = deck.flashcards.removeAt(0);
       yield PlayingDeck(
-        scoredFlashcards: scoredFlashcards,
-        currentFlashcard: firstFlashcard,
+        deck: deck,
+        curFlashcard: firstFlashcard,
         isRevealingAnswer: false,
       );
     }
 
-    if (event is RevealFlashcardAnswerButtonPressed && currentState is PlayingDeck) {
-      yield PlayingDeck(
-          scoredFlashcards: currentState.scoredFlashcards,
-          currentFlashcard: currentState.currentFlashcard,
-          isRevealingAnswer: true,
+    if (event is RevealFlashcardAnswerButtonPressed &&
+        curState is PlayingDeck) {
+      yield curState.copyWith(
+        isRevealingAnswer: true,
       );
     }
 
-    if (event is ScoreFlashcardButtonPressed && currentState is PlayingDeck) {
-      const scoreToPositionMap = <FlashcardScore, int>{
-        FlashcardScore.easy: 8,
+    if (event is ScoreFlashcardButtonPressed && curState is PlayingDeck) {
+      final scoreToPositionMap = <FlashcardScore, int>{
+        FlashcardScore.easy: curState.deck.flashcards.length + 1,
         FlashcardScore.partial: 5,
         FlashcardScore.hard: 3
       };
 
       final int newFlashcardPosition = scoreToPositionMap[event.score];
-      final newScoredFlashcard = ScoredFlashcard(
-        flashcard: currentState.currentFlashcard.flashcard,
-        score: event.score,
-      );
+      final flashcardWithNewScore = curState.curFlashcard.copyWith(score: event.score);
 
-      if (newFlashcardPosition > currentState.scoredFlashcards.length) {
-        currentState.scoredFlashcards.add(newScoredFlashcard);
+      if (newFlashcardPosition > curState.deck.flashcards.length) {
+        curState.deck.flashcards.add(flashcardWithNewScore);
       } else {
-        currentState.scoredFlashcards
-            .insert(newFlashcardPosition - 1, newScoredFlashcard);
+        curState.deck.flashcards
+            .insert(newFlashcardPosition - 1, flashcardWithNewScore);
       }
 
-      final nextFlashcard = currentState.scoredFlashcards.removeAt(0);
+      final nextFlashcard = curState.deck.flashcards.removeAt(0);
 
-      yield PlayingDeck(
-        scoredFlashcards: currentState.scoredFlashcards,
-        currentFlashcard: nextFlashcard,
+      yield curState.copyWith(
+        curFlashcard: nextFlashcard,
         isRevealingAnswer: false,
       );
+    }
+
+    if (event is StopButtonPressed && curState is PlayingDeck) {
+      curState.deck.flashcards.add(curState.curFlashcard);
+      yield StoppedDeck(deck: curState.deck);
     }
   }
 }
@@ -79,31 +81,36 @@ class ScoreFlashcardButtonPressed implements PlayDeckEvent {
 
 class RevealFlashcardAnswerButtonPressed implements PlayDeckEvent {}
 
+class StopButtonPressed implements PlayDeckEvent {}
+
 abstract class PlayDeckState {}
 
 class PlayDeckUninit implements PlayDeckState {}
 
 class PlayingDeck implements PlayDeckState {
-  final List<ScoredFlashcard> scoredFlashcards;
-  final ScoredFlashcard currentFlashcard;
+  final Deck deck;
+  final Flashcard curFlashcard;
   bool isRevealingAnswer;
 
   PlayingDeck({
-    @required this.scoredFlashcards,
-    @required this.currentFlashcard,
+    @required this.deck,
+    @required this.curFlashcard,
     @required this.isRevealingAnswer,
   });
+
+  PlayingDeck copyWith({
+    Deck deck,
+    Flashcard curFlashcard,
+    bool isRevealingAnswer,
+  }) =>
+      PlayingDeck(
+        deck: deck ?? this.deck,
+        curFlashcard: curFlashcard ?? this.curFlashcard,
+        isRevealingAnswer: isRevealingAnswer ?? this.isRevealingAnswer,
+      );
 }
 
-class ScoredFlashcard {
-  final Flashcard flashcard;
-  FlashcardScore score;
-
-  ScoredFlashcard({@required this.flashcard, @required this.score});
-}
-
-enum FlashcardScore {
-  easy,
-  partial,
-  hard,
+class StoppedDeck implements PlayDeckState {
+  final Deck deck;
+  StoppedDeck({@required this.deck});
 }

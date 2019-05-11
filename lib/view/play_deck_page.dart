@@ -21,8 +21,12 @@ class PlayDeckPage extends StatelessWidget {
           return Center(child: CircularProgressIndicator());
         }
 
+        if (state is StoppedDeck) {
+          return Center(child: const Text('Parabéns!'));
+        }
+
         if (state is PlayingDeck) {
-          final flashcard = state.currentFlashcard.flashcard;
+          final flashcard = state.curFlashcard;
 
           return Column(
             children: <Widget>[
