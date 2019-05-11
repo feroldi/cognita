@@ -1,35 +1,75 @@
 import 'package:flutter/material.dart';
 
-import 'new_card/new_card_page.dart';
-
-// TODO: Dashboard, que dá informação pra tu vagabundo
-// TODO: Meus decks, que lista os decks
-// TODO: Novo deck, que cria um novo deck
-// TODO: Nova carta, que seleciona um deck pra criar card
+import 'model/flashcard.dart';
+import 'model/deck.dart';
+import 'presenter/play_deck_bloc.dart';
+import 'view/play_deck_page.dart';
 
 void main() {
-  runApp(RootApp());
+  final deck = Deck(
+    id: 0,
+    flashcards: <Flashcard>[
+      Flashcard(
+          id: 0,
+          question: 'O que é Flutter?',
+          answer: 'Um kit de desenvolvimento para aplicações mobile'),
+      Flashcard(
+          id: 1,
+          question: 'O que é Dart?',
+          answer: 'Uma linguagem de programação desenvolvida pela Google'),
+      Flashcard(
+          id: 2,
+          question: 'O que é um cara bom?',
+          answer: 'Um cara que dá o cu'),
+      Flashcard(
+          id: 3,
+          question: 'O que é um cara filho da puta?',
+          answer: 'Um cara honesto que só se fode'),
+      Flashcard(
+          id: 4,
+          question: 'Defina o namoro antes dos 30 anos',
+          answer: 'Os 30s precoce'),
+      Flashcard(
+          id: 5,
+          question: 'Quanto é 1 + 1?',
+          answer: '2'),
+      Flashcard(
+          id: 6,
+          question: 'Quem é "cadê meu chocolate"?',
+          answer: 'É uma garota que passou por nós dois falando essa frase'),
+      Flashcard(
+          id: 7,
+          question: 'My life shines o quê?',
+          answer: 'My life shines on!'),
+    ],
+  );
+
+  final playDeckBloc = PlayDeckBloc()..dispatch(PlayDeckInit(deckToPlay: deck));
+
+  runApp(RootApp(playDeckBloc));
 }
 
 class RootApp extends StatelessWidget {
+  final PlayDeckBloc playDeckBloc;
+
+  RootApp(this.playDeckBloc);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
         primaryColor: Colors.deepPurple,
+        accentColor: Colors.deepPurpleAccent,
       ),
-      home: HomeScreen(),
+      home: HomeScreen(playDeckBloc),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
+class HomeScreen extends StatelessWidget {
+  final PlayDeckBloc playDeckBloc;
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  HomeScreen(this.playDeckBloc);
 
   @override
   Widget build(BuildContext context) {
@@ -38,48 +78,10 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('Cognita'),
       ),
       body: _buildBody(context),
-      bottomNavigationBar: _buildBottomBar(context),
     );
-  }
-
-  // Barra inferior da home
-  Widget _buildBottomBar(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      onTap: (index) => _onItemTapped(context, index),
-      items: <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
-          title: Text('Dashboard'),
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add),
-          title: Text('Nova carta'),
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.folder),
-          title: Text('Meus decks'),
-        ),
-      ],
-    );
-  }
-
-  void _onItemTapped(BuildContext context, int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => NewCardPage(),
-        ),
-      );
-    }
   }
 
   Widget _buildBody(BuildContext context) {
-    return Container();
+    return PlayDeckPage(playDeckBloc: playDeckBloc);
   }
 }
