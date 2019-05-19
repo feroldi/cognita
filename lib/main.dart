@@ -1,96 +1,57 @@
 import 'package:flutter/material.dart';
 
-import 'model/flashcard.dart';
+import 'bloc/leitner_system_bloc.dart';
 import 'model/deck.dart';
-import 'presenter/play_deck_bloc.dart';
-import 'view/play_deck_page.dart';
+import 'model/flashcard.dart';
+import 'repository/flashcard_repository.dart';
+import 'ui/leitner_system_page.dart';
 
 void main() {
-  final deck = Deck(
-    id: 0,
-    title: 'Teste',
-    flashcards: <Flashcard>[
-      Flashcard(
-          id: 0,
-          question: 'O que é Flutter?',
-          answer: 'Um kit de desenvolvimento para aplicações mobile',
-          score: FlashcardScore.hard),
-      Flashcard(
-          id: 1,
-          question: 'O que é Dart?',
-          answer: 'Uma linguagem de programação desenvolvida pela Google',
-          score: FlashcardScore.hard),
-      Flashcard(
-          id: 2,
-          question: 'O que é um cara bom?',
-          answer: 'Um cara que dá o cu',
-          score: FlashcardScore.hard),
-      Flashcard(
-          id: 3,
-          question: 'O que é um cara filho da puta?',
-          answer: 'Um cara honesto que só se fode',
-          score: FlashcardScore.hard),
-      Flashcard(
-          id: 4,
-          question: 'Defina o namoro antes dos 30 anos',
-          answer: 'Os 30s precoce',
-          score: FlashcardScore.hard),
-      Flashcard(
-          id: 5,
-          question: 'Quanto é 1 + 1?',
-          answer: '2',
-          score: FlashcardScore.hard),
-      Flashcard(
-          id: 6,
-          question: 'Quem é "cadê meu chocolate"?',
-          answer: 'É uma garota que passou por nós dois falando essa frase',
-          score: FlashcardScore.hard),
-      Flashcard(
-          id: 7,
-          question: 'My life shines o quê?',
-          answer: 'My life shines on!',
-          score: FlashcardScore.hard),
-    ],
-  );
+  final flashcards = <Flashcard>[
+    Flashcard(0, 0, 'A', '3'),
+    Flashcard(1, 0, 'B', '1'),
+    Flashcard(2, 1, 'C', '9'),
+    Flashcard(3, 1, 'D', '4'),
+    Flashcard(4, 2, 'E', '7'),
+    Flashcard(5, 2, 'F', '8'),
+  ];
+  final flashcardRepository = MockFlashcardRepository(flashcards);
+  final deck = Deck(0, 'Test', List<int>.generate(6, (i) => i), 3);
+  final bloc = LeitnerSystemBloc(deck, flashcardRepository);
+  bloc.dispatch(StartLearningLSEvent());
 
-  final playDeckBloc = PlayDeckBloc()..dispatch(PlayDeckInit(deckToPlay: deck));
-
-  runApp(RootApp(playDeckBloc));
+  runApp(RootApp(bloc));
 }
 
 class RootApp extends StatelessWidget {
-  final PlayDeckBloc playDeckBloc;
+  final LeitnerSystemBloc bloc;
 
-  RootApp(this.playDeckBloc);
+  RootApp(this.bloc);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        primaryColor: Colors.deepPurple,
-        accentColor: Colors.deepPurpleAccent,
-      ),
-      home: HomeScreen(playDeckBloc),
+      title: 'Cognita2',
+      home: LeitnerSystemPage(bloc),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  final PlayDeckBloc playDeckBloc;
+class MockFlashcardRepository implements FlashcardRepository {
+  List<Flashcard> _data;
 
-  HomeScreen(this.playDeckBloc);
+  MockFlashcardRepository(this._data);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Cognita'),
-      ),
-      body: _buildBody(context),
-    );
+  Future<Flashcard> load(int id) {
+    return Future.value(_data.firstWhere((f) => f.id == id));
   }
 
-  Widget _buildBody(BuildContext context) {
-    return PlayDeckPage(playDeckBloc: playDeckBloc);
+  Future<void> store(Flashcard flashcard) {
+    final idx = _data.indexWhere((f) => f.id == flashcard.id);
+    if (idx != -1) {
+      _data[idx] = flashcard;
+    } else {
+      _data.add(flashcard);
+    }
   }
 }
