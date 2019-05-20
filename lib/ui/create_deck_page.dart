@@ -82,8 +82,8 @@ class _CreateDeckPageState extends State<CreateDeckPage> {
             if (_formValidator.currentState.validate()) {
               await widget.deckRepository.store(Deck(
                 null,
-                titleTextCtrl.text,
-                int.parse(groupTextCtrl.text),
+                titleTextCtrl.text.trim(),
+                int.parse(groupTextCtrl.text.trim()),
               ));
               Navigator.of(context).pop();
             }

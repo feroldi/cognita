@@ -75,8 +75,8 @@ class _EditFlashcardPageState extends State<EditFlashcardPage> {
               ? () {
                   if (_formValidator.currentState.validate()) {
                     widget.onSaveAction(
-                      questionTextCtrl.text,
-                      answerTextCtrl.text,
+                      questionTextCtrl.text.trim(),
+                      answerTextCtrl.text.trim(),
                     );
                     Navigator.of(context).pop();
                   }
