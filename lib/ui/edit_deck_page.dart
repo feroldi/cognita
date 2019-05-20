@@ -27,7 +27,8 @@ class _EditDeckPageState extends State<EditDeckPage> {
       title: Text(editDeckBloc.deck.title),
       actions: <Widget>[
         IconButton(
-          icon: Icon(Icons.play_arrow),
+          //icon: Icon(Icons.play_arrow),
+          icon: Icon(Icons.video_library),
           onPressed: () async {
             await Navigator.of(context).push(MaterialPageRoute(
               builder: (context) =>
@@ -53,7 +54,7 @@ class _EditDeckPageState extends State<EditDeckPage> {
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
         onPressed: () async => await _onCreateFlashcard(context),
-        child: Icon(Icons.add),
+        child: Icon(Icons.note_add),
       ),
     );
 
@@ -85,16 +86,29 @@ class _EditDeckPageState extends State<EditDeckPage> {
       );
     }
 
+    final proficiencyColors = <Color>[
+      Colors.red,
+      Colors.blue,
+      Colors.green,
+    ];
+
     return ListView.separated(
       separatorBuilder: (ctx, index) => Divider(height: 0.0),
       itemBuilder: (ctx, index) {
         if (index < flashcards.length) {
+          final proficiencyColorIndex =
+              (((flashcards[index].group) / editDeckBloc.deck.maxGroup) * 3)
+                  .toInt();
           final tile = ListTile(
-            leading:
-                Icon(Icons.short_text, color: Theme.of(context).accentColor),
-            title: Text(flashcards[index].question),
+            leading: Icon(Icons.note, color: Theme.of(context).accentColor),
+            trailing: Icon(Icons.offline_bolt,
+                color: proficiencyColors[proficiencyColorIndex]),
+            title: Text(
+              flashcards[index].question,
+              overflow: TextOverflow.ellipsis,
+            ),
             subtitle: Text(
-                'Group ${flashcards[index].group + 1} of ${editDeckBloc.deck.maxGroup}'),
+                'Box ${flashcards[index].group + 1}/${editDeckBloc.deck.maxGroup}'),
             onTap: () => _onEditFlashcard(context, flashcards[index]),
           );
           return Dismissible(

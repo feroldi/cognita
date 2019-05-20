@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
       body: _buildDeckList(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () async => await _onCreateDeck(context),
-        child: Icon(Icons.add),
+        child: Icon(Icons.library_add),
       ),
     );
 
@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildDeckTile(BuildContext context, Deck deck) {
     final tile = ListTile(
-      leading: Icon(Icons.folder, color: Theme.of(context).accentColor),
+      leading: Icon(Icons.library_books, color: Theme.of(context).accentColor),
       title: Text(deck.title),
       onTap: () => _onEditDeck(context, deck),
     );
