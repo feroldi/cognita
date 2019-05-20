@@ -1,16 +1,22 @@
-# cognita
+# Cognita
 
-A new Flutter project.
+Cognita is a flashcard system Flutter application.
+It implements the [Leitner system][1] for the training sessions, allowing the user to choose how many sessions a deck should go through.
+This is a university mobile development class' homework, so expect to see suboptimal code.
 
-## Getting Started
+The application data are persisted using an embedded SQLite database.
 
-This project is a starting point for a Flutter application.
+## Building
 
-A few resources to get you started if this is your first Flutter project:
+Clone the repository and run it with Flutter:
 
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
+    git clone https://github.com/feroldi/cognita.git
+    cd cognita
+    flutter run
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+## Testing
+
+Unfortunately, there aren't any tests written for Cognita.
+Feel free to submit a PR if you wish to contribute in any way.
+
+[1]: https://en.wikipedia.org/wiki/Leitner_system
