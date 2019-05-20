@@ -43,10 +43,10 @@ class _CreateDeckPageState extends State<CreateDeckPage> {
         try {
           final input = int.parse(text);
           if (input <= 2 || input > 10) {
-            return 'Sessions can only be 2 to 10';
+            return 'Sessions can only be 3 to 10';
           }
         } on FormatException {
-          return 'Sessions are a number between 2 and 10';
+          return 'Sessions are a number between 3 and 10';
         }
         return null;
       },

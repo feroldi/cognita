@@ -36,6 +36,17 @@ class EditDeckBloc extends Bloc<EDEvent, EDState> {
       await flashcardRepository.store(event.flashcard);
       dispatch(EDEventLoadFlashcards());
     }
+
+    if (event is EDEventResetFlashcardsGroup &&
+        currentState is EDStateFlashcards) {
+      final flashcards =
+          List<Flashcard>.from((currentState as EDStateFlashcards).flashcards);
+      for (final flashcard in flashcards) {
+        flashcard.group = 0;
+        await flashcardRepository.store(flashcard);
+      }
+      yield EDStateFlashcards(flashcards);
+    }
   }
 }
 
@@ -53,6 +64,8 @@ class EDEventEditFlashcard implements EDEvent {
   final Flashcard flashcard;
   EDEventEditFlashcard(this.flashcard);
 }
+
+class EDEventResetFlashcardsGroup implements EDEvent {}
 
 abstract class EDState {}
 

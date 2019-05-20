@@ -41,7 +41,7 @@ class LeitnerSystemBloc extends Bloc<LSEvent, LSState> {
       // back to the initial group.
       if (event.classification == Classification.easy) {
         // Promote this flashcard, but only if it's not in the last group.
-        if (currentState.currentFlashcard.group < deck.maxGroup) {
+        if (currentState.currentFlashcard.group < (deck.maxGroup-1)) {
           currentState.currentFlashcard.group++;
         }
       } else {

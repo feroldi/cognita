@@ -36,6 +36,15 @@ class _EditDeckPageState extends State<EditDeckPage> {
             editDeckBloc.dispatch(EDEventLoadFlashcards());
           },
         ),
+        IconButton(
+          icon: Icon(Icons.replay),
+          onPressed: () async {
+            final bool shouldResetDeck = await _dialogShouldResetDeck(context);
+            if (shouldResetDeck) {
+              editDeckBloc.dispatch(EDEventResetFlashcardsGroup());
+            }
+          },
+        ),
       ],
     );
 
@@ -85,7 +94,7 @@ class _EditDeckPageState extends State<EditDeckPage> {
                 Icon(Icons.short_text, color: Theme.of(context).accentColor),
             title: Text(flashcards[index].question),
             subtitle: Text(
-                'Group ${flashcards[index].group} of ${editDeckBloc.deck.maxGroup}'),
+                'Group ${flashcards[index].group + 1} of ${editDeckBloc.deck.maxGroup}'),
             onTap: () => _onEditFlashcard(context, flashcards[index]),
           );
           return Dismissible(
@@ -166,6 +175,35 @@ class _EditDeckPageState extends State<EditDeckPage> {
             child: ListBody(
               children: <Widget>[
                 Text(dialogMessage),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('Yes'),
+              onPressed: () => Navigator.of(ctx).pop(true),
+            ),
+            FlatButton(
+              child: const Text('No'),
+              onPressed: () => Navigator.of(ctx).pop(false),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _dialogShouldResetDeck(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('Reset deck'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Do you want to reset this deck to its initial stage?'),
               ],
             ),
           ),
