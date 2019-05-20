@@ -83,16 +83,17 @@ class _LeitnerSystemPageState extends State<LeitnerSystemPage> {
               ),
             ],
           )
-        : SizedBox(height: 24.0);
+        : SizedBox(height: 36.0);
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        question,
+        Expanded(child: Center(child: SingleChildScrollView(child: question))),
         Divider(),
-        answer,
+        Expanded(child: Center(child: SingleChildScrollView(child: answer))),
         bottom,
+        SizedBox(height: 5.0),
       ],
     );
   }

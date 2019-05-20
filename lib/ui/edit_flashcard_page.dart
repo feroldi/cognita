@@ -31,19 +31,23 @@ class _EditFlashcardPageState extends State<EditFlashcardPage> {
     final questionTextField = TextFormField(
       controller: questionTextCtrl,
       validator: (text) => text.trim().isEmpty ? '' : null,
-      maxLines: 10,
+      maxLines: 8,
       decoration: InputDecoration(
         labelText: 'Question',
       ),
+      textCapitalization: TextCapitalization.sentences,
+      maxLength: 256,
     );
 
     final answerTextField = TextFormField(
       controller: answerTextCtrl,
       validator: (text) => text.trim().isEmpty ? '' : null,
-      maxLines: 10,
+      maxLines: 8,
       decoration: InputDecoration(
         labelText: 'Answer',
       ),
+      textCapitalization: TextCapitalization.sentences,
+      maxLength: 256,
     );
 
     final textFields = Padding(

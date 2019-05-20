@@ -62,14 +62,8 @@ class _HomePageState extends State<HomePage> {
 
           return ListView.separated(
             separatorBuilder: (ctx, index) => Divider(height: 0.0),
-            itemBuilder: (ctx, index) {
-              return ListTile(
-                leading:
-                    Icon(Icons.folder, color: Theme.of(context).accentColor),
-                title: Text(state.decks[index].title),
-                onTap: () => _onEditDeck(ctx, state.decks[index]),
-              );
-            },
+            itemBuilder: (ctx, index) =>
+                _buildDeckTile(ctx, state.decks[index]),
             itemCount: state.decks.length,
           );
         }
@@ -77,18 +71,85 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildDeckTile(BuildContext context, Deck deck) {
+    final tile = ListTile(
+      leading: Icon(Icons.folder, color: Theme.of(context).accentColor),
+      title: Text(deck.title),
+      onTap: () => _onEditDeck(context, deck),
+    );
+
+    return Dismissible(
+      key: Key('deck ${deck.id}'),
+      child: tile,
+      background: Container(
+          alignment: AlignmentDirectional.centerStart,
+          color: Colors.red,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Icon(Icons.delete_forever, color: Colors.white),
+          )),
+      secondaryBackground: Container(
+          alignment: AlignmentDirectional.centerEnd,
+          color: Colors.red,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Icon(Icons.delete_forever, color: Colors.white),
+          )),
+      onDismissed: (direction) =>
+          _onDeckDismissed(deck, direction),
+      confirmDismiss: (direction) =>
+          _confirmDeckDismiss(context, direction, deck),
+    );
+  }
+
+  void _onDeckDismissed(
+      Deck deck, DismissDirection direction) async {
+    await widget.deckRepository.remove(deck.id);
+    homeBloc.dispatch(LoadDecksHomeEvent());
+  }
+
+  Future<bool> _confirmDeckDismiss(
+      BuildContext context, DismissDirection direction, Deck deck) async {
+    final dialogMessage =
+        'Are you sure you want to delete this deck?';
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('Delete ${deck.title}'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(dialogMessage),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('Yes'),
+              onPressed: () => Navigator.of(ctx).pop(true),
+            ),
+            FlatButton(
+              child: const Text('No'),
+              onPressed: () => Navigator.of(ctx).pop(false),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _onCreateDeck(BuildContext context) async {
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) =>
-          CreateDeckPage(widget.deckRepository),
+      builder: (context) => CreateDeckPage(widget.deckRepository),
     ));
     homeBloc.dispatch(LoadDecksHomeEvent());
   }
 
   void _onEditDeck(BuildContext context, Deck deck) async {
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) =>
-          EditDeckPage(deck, widget.flashcardRepository),
+      builder: (context) => EditDeckPage(deck, widget.flashcardRepository),
     ));
     homeBloc.dispatch(LoadDecksHomeEvent());
   }

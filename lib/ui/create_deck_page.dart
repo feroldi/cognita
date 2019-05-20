@@ -21,19 +21,40 @@ class _CreateDeckPageState extends State<CreateDeckPage> {
   Widget build(BuildContext context) {
     final titleTextField = TextFormField(
       controller: titleTextCtrl,
-      validator: (text) => text.trim().isEmpty ? '' : null,
+      validator: (text) {
+        if (text.trim().isEmpty) {
+          return 'Provide the deck\'s title';
+        }
+        return null;
+      },
       decoration: InputDecoration(
         labelText: 'Title',
       ),
+      textCapitalization: TextCapitalization.sentences,
+      maxLength: 32,
     );
 
     final groupTextField = TextFormField(
       controller: groupTextCtrl,
-      validator: (text) => text.trim().isEmpty ? '' : null,
+      validator: (text) {
+        if (text.trim().isEmpty) {
+          return 'Obligatory field';
+        }
+        try {
+          final input = int.parse(text);
+          if (input <= 2 || input > 10) {
+            return 'Sessions can only be 2 to 10';
+          }
+        } on FormatException {
+          return 'Sessions are a number between 2 and 10';
+        }
+        return null;
+      },
       decoration: InputDecoration(
         labelText: 'Sessions',
       ),
       keyboardType: TextInputType.number,
+      maxLength: 2,
     );
 
     final textFields = Padding(

@@ -50,4 +50,12 @@ class DeckSqliteRepository implements DeckRepository {
       await database.insert('decks', deck.toMap());
     }
   }
+
+  Future<Deck> remove(int id) async {
+    await database.delete(
+      'decks',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }
