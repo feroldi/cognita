@@ -46,16 +46,26 @@ class _LeitnerSystemPageState extends State<LeitnerSystemPage> {
     }
 
     final flashcard = state.currentFlashcard;
-    final question = Text(
-      flashcard.question,
-      style: TextStyle(fontSize: 24.0),
-      textAlign: TextAlign.center,
+
+    final questionFontSize = 12.0 + (1.0 - (flashcard.question.length / 256)) * 12.0;
+    final answerFontSize = 12.0 + (1.0 - (flashcard.answer.length / 256)) * 12.0;
+
+    final question = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Text(
+        flashcard.question,
+        style: TextStyle(fontSize: questionFontSize),
+        textAlign: TextAlign.center,
+      ),
     );
     final answer = state.isAnswerVisible
-        ? Text(
-            flashcard.answer,
-            style: TextStyle(fontSize: 24.0),
-            textAlign: TextAlign.center,
+        ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              flashcard.answer,
+              style: TextStyle(fontSize: answerFontSize),
+              textAlign: TextAlign.center,
+            ),
           )
         : FlatButton(
             onPressed: () => bloc.dispatch(RevealAnswerLSEvent()),
