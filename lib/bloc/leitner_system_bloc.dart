@@ -23,9 +23,7 @@ class LeitnerSystemBloc extends Bloc<LSEvent, LSState> {
       assert(learningSet.isEmpty);
 
       // Load all the deck's flashcards, then sort it by group.
-      for (final int flashcardId in deck.flashcardIds) {
-        learningSet.add(await flashcardRepository.load(flashcardId));
-      }
+      learningSet = await flashcardRepository.loadAllByDeckId(deck.id);
       learningSet.sort((a, b) => a.group.compareTo(b.group));
 
       // Use the first flashcard as the initial one.

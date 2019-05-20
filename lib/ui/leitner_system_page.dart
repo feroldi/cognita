@@ -6,10 +6,18 @@ import '../model/deck.dart';
 import '../model/flashcard.dart';
 import '../repository/flashcard_repository.dart';
 
-class LeitnerSystemPage extends StatelessWidget {
-  final LeitnerSystemBloc bloc;
+class LeitnerSystemPage extends StatefulWidget {
+  final Deck deck;
+  final FlashcardRepository flashcardRepository;
 
-  LeitnerSystemPage(this.bloc);
+  LeitnerSystemPage(this.deck, this.flashcardRepository);
+
+  @override
+  _LeitnerSystemPageState createState() => _LeitnerSystemPageState();
+}
+
+class _LeitnerSystemPageState extends State<LeitnerSystemPage> {
+  LeitnerSystemBloc bloc;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +61,7 @@ class LeitnerSystemPage extends StatelessWidget {
             onPressed: () => bloc.dispatch(RevealAnswerLSEvent()),
             color: Theme.of(context).accentColor,
             textColor: Colors.white,
-            child: const Text('Resposta'),
+            child: const Text('Reveal'),
           );
     final bottom = state.isAnswerVisible
         ? Row(
@@ -62,16 +70,16 @@ class LeitnerSystemPage extends StatelessWidget {
               FlatButton(
                 onPressed: () => bloc
                     .dispatch(ClassifyFlashcardLSEvent(Classification.easy)),
-                color: Colors.green,
-                textColor: Colors.white,
-                child: const Text('Fácil'),
+                color: Colors.green[100],
+                textColor: Colors.green,
+                child: const Text('Easy'),
               ),
               FlatButton(
                 onPressed: () => bloc
                     .dispatch(ClassifyFlashcardLSEvent(Classification.hard)),
-                color: Colors.red,
-                textColor: Colors.white,
-                child: const Text('Difícil'),
+                color: Colors.red[100],
+                textColor: Colors.red,
+                child: const Text('Hard'),
               ),
             ],
           )
@@ -87,5 +95,12 @@ class LeitnerSystemPage extends StatelessWidget {
         bottom,
       ],
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    bloc = LeitnerSystemBloc(widget.deck, widget.flashcardRepository)
+      ..dispatch(StartLearningLSEvent());
   }
 }
