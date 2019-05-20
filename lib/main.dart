@@ -1,37 +1,60 @@
+import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'model/deck.dart';
 import 'model/flashcard.dart';
 import 'repository/deck_repository.dart';
 import 'repository/flashcard_repository.dart';
+import 'sqlite_repository/deck_sqlite_repository.dart';
+import 'sqlite_repository/flashcard_sqlite_repository.dart';
 import 'ui/home_page.dart';
 
-void main() {
-  final decks = <Deck>[
-    Deck(0, 'Test', 3),
-  ];
+class PrinterBlocDelegate extends BlocDelegate {
+  @override
+  void onError(Bloc bloc, Object error, StackTrace st) {
+    super.onError(bloc, error, st);
+    print('$error, $st');
+  }
+}
 
-  final flashcards = <Flashcard>[
-    Flashcard(0, 0, 0, 'A', '3'),
-    Flashcard(1, 0, 0, 'B', '1'),
-    Flashcard(2, 0, 1, 'C', '9'),
-    Flashcard(3, 0, 1, 'D', '4'),
-    Flashcard(4, 0, 2, 'E', '7'),
-    Flashcard(5, 0, 2, 'F', '8'),
-  ];
+void main() async {
+  BlocSupervisor().delegate = PrinterBlocDelegate();
 
-  final deckRepository = MockDeckRepository(decks);
-  final flashcardRepository = MockFlashcardRepository(flashcards);
+  final databasesPath = await getDatabasesPath();
+  String path = '${databasesPath}_cognita.db';
 
-  runApp(CognitaApp(deckRepository, flashcardRepository, decks));
+  final database = await openDatabase(path, version: 3,
+      onCreate: (Database db, int version) async {
+    await db.execute('CREATE TABLE IF NOT EXISTS decks ('
+        'id INTEGER PRIMARY KEY,'
+        'title TEXT,'
+        'sessions INTEGER'
+        ')');
+    await db.execute('CREATE TABLE IF NOT EXISTS flashcards ('
+        'id INTEGER PRIMARY KEY,'
+        'box INTEGER,'
+        'question TEXT,'
+        'answer TEXT,'
+        'deck_id INTEGER,'
+        'FOREIGN KEY(deck_id) REFERENCES decks(id)'
+        ')');
+  });
+
+  final deckRepository = DeckSqliteRepository(database);
+  final flashcardRepository = FlashcardSqliteRepository(database);
+
+  runApp(CognitaApp(
+    deckRepository,
+    flashcardRepository,
+  ));
 }
 
 class CognitaApp extends StatelessWidget {
   final DeckRepository deckRepository;
   final FlashcardRepository flashcardRepository;
-  final List<Deck> decks;
 
-  CognitaApp(this.deckRepository, this.flashcardRepository, this.decks);
+  CognitaApp(this.deckRepository, this.flashcardRepository);
 
   @override
   Widget build(BuildContext context) {
@@ -43,73 +66,6 @@ class CognitaApp extends StatelessWidget {
       home: HomePage(deckRepository, flashcardRepository),
     );
 
-    return  app;
-  }
-}
-
-class MockFlashcardRepository implements FlashcardRepository {
-  final List<Flashcard> _data;
-
-  MockFlashcardRepository([this._data = const <Flashcard>[]]);
-
-  Future<Flashcard> load(int id) {
-    return Future.value(_data.firstWhere((f) => f.id == id));
-  }
-
-  Future<List<Flashcard>> loadAllByDeckId(int deckId) {
-    return Future.value(_data.where((f) => f.deckId == deckId).toList());
-  }
-
-  Future<void> store(Flashcard flashcard) {
-    if (flashcard.id == null) {
-      flashcard.id = _data.length;
-    }
-
-    final idx = _data.indexWhere((f) => f.id == flashcard.id);
-
-    if (idx != -1) {
-      _data[idx] = flashcard;
-    } else {
-      _data.add(flashcard);
-    }
-  }
-
-  Future<Flashcard> remove(int id) {
-    final idx = _data.indexWhere((f) => f.id == id);
-
-    if (idx != -1) {
-      return Future.value(_data.removeAt(idx));
-    }
-
-    return Future.value(null);
-  }
-}
-
-class MockDeckRepository implements DeckRepository {
-  final List<Deck> _data;
-
-  MockDeckRepository([this._data = const <Deck>[]]);
-
-  Future<Deck> load(int id) {
-    return Future.value(_data.firstWhere((d) => d.id == id));
-  }
-
-  Future<List<Deck>> loadAll() {
-    return Future.value(_data);
-  }
-
-  Future<void> store(Deck deck) {
-    if (deck.id == null) {
-      print('pois bem');
-      deck.id = _data.length;
-    }
-
-    final idx = _data.indexWhere((d) => d.id == deck.id);
-
-    if (idx != -1) {
-      _data[idx] = deck;
-    } else {
-      _data.add(deck);
-    }
+    return app;
   }
 }

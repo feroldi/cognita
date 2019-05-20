@@ -33,6 +33,7 @@ class _EditDeckPageState extends State<EditDeckPage> {
               builder: (context) =>
                   LeitnerSystemPage(widget.deck, widget.flashcardRepository),
             ));
+            editDeckBloc.dispatch(EDEventLoadFlashcards());
           },
         ),
       ],
