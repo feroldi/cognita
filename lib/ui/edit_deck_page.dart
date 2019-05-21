@@ -110,6 +110,13 @@ class _EditDeckPageState extends State<EditDeckPage> {
           final proficiencyColorIndex =
               (((flashcards[index].group) / editDeckBloc.deck.maxGroup) * 3)
                   .toInt();
+          final boxPositionNumber = '${flashcards[index].group + 1}';
+          final boxPositionSuffix = boxPositionNumber.endsWith('1')
+              ? 'st'
+              : boxPositionNumber.endsWith('2')
+                  ? 'nd'
+                  : boxPositionNumber.endsWith('3') ? 'rd' : 'th';
+          final boxPosition = '$boxPositionNumber$boxPositionSuffix';
           final tile = ListTile(
             leading: Icon(Icons.note, color: Theme.of(context).accentColor),
             trailing: Icon(Icons.offline_bolt,
@@ -117,8 +124,7 @@ class _EditDeckPageState extends State<EditDeckPage> {
             title: MarkdownBody(
               data: flashcards[index].question,
             ),
-            subtitle: Text(
-                'Box ${flashcards[index].group + 1} in ${editDeckBloc.deck.maxGroup}'),
+            subtitle: Text('In $boxPosition box'),
             onTap: () => _onEditFlashcard(context, flashcards[index]),
           );
           return Dismissible(
@@ -187,8 +193,7 @@ class _EditDeckPageState extends State<EditDeckPage> {
 
   Future<bool> _confirmFlashcardDismiss(
       BuildContext context, DismissDirection direction) async {
-    final dialogMessage =
-        'This will remove this flashcard from the deck.';
+    final dialogMessage = 'This will remove this flashcard from the deck.';
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -227,7 +232,8 @@ class _EditDeckPageState extends State<EditDeckPage> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('This will reset all deck\'s flashcards back to the first box.'),
+                Text(
+                    'This will reset all deck\'s flashcards back to the first box.'),
               ],
             ),
           ),
