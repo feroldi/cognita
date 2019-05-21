@@ -52,16 +52,18 @@ class _LeitnerSystemPageState extends State<LeitnerSystemPage> {
       data: flashcard.question,
     );
     final answer = state.isAnswerVisible
-        ? Expanded(
-            child: Markdown(
-              data: flashcard.answer,
-            ),
+        ? Markdown(
+            data: flashcard.answer,
           )
-        : FlatButton(
-            onPressed: () => bloc.dispatch(RevealAnswerLSEvent()),
-            color: Theme.of(context).accentColor,
-            textColor: Colors.white,
-            child: const Text('Reveal'),
+        : Center(
+            child: SingleChildScrollView(
+              child: FlatButton(
+                onPressed: () => bloc.dispatch(RevealAnswerLSEvent()),
+                color: Theme.of(context).accentColor,
+                textColor: Colors.white,
+                child: const Text('Reveal'),
+              ),
+            ),
           );
     final bottom = state.isAnswerVisible
         ? Row(
@@ -86,12 +88,12 @@ class _LeitnerSystemPageState extends State<LeitnerSystemPage> {
         : SizedBox(height: 36.0);
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         Expanded(child: question),
         Divider(),
-        answer,
+        Expanded(child: answer),
         bottom,
         SizedBox(height: 5.0),
       ],
