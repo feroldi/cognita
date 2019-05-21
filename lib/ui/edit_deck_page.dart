@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../bloc/edit_deck_bloc.dart';
 import '../model/deck.dart';
@@ -23,57 +24,67 @@ class _EditDeckPageState extends State<EditDeckPage> {
 
   @override
   Widget build(BuildContext context) {
-    final appBar = AppBar(
-      title: Text(editDeckBloc.deck.title),
-      actions: <Widget>[
-        IconButton(
-          //icon: Icon(Icons.play_arrow),
-          icon: Icon(Icons.video_library),
-          onPressed: () async {
-            await Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>
-                  LeitnerSystemPage(widget.deck, widget.flashcardRepository),
-            ));
-            editDeckBloc.dispatch(EDEventLoadFlashcards());
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.replay),
-          onPressed: () async {
-            final bool shouldResetDeck = await _dialogShouldResetDeck(context);
-            if (shouldResetDeck) {
-              editDeckBloc.dispatch(EDEventResetFlashcardsGroup());
-            }
-          },
-        ),
-      ],
-    );
-
-    final scaffold = Scaffold(
-      appBar: appBar,
-      body: _buildBody(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async => await _onCreateFlashcard(context),
-        child: Icon(Icons.note_add),
-      ),
-    );
-
-    return scaffold;
-  }
-
-  Widget _buildBody() {
     return BlocBuilder<EDEvent, EDState>(
       bloc: editDeckBloc,
       builder: (context, state) {
-        if (state is EDStateLoading) {
-          return Center(child: CircularProgressIndicator());
-        }
+        final hasFlashcards = state is! EDStateFlashcards ||
+            (state as EDStateFlashcards).flashcards.isNotEmpty;
+        final actions = <Widget>[
+          IconButton(
+            icon: Icon(Icons.video_library),
+            tooltip: 'Learn deck',
+            onPressed: hasFlashcards
+                ? () async {
+                    await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => LeitnerSystemPage(
+                          widget.deck, widget.flashcardRepository),
+                    ));
+                    editDeckBloc.dispatch(EDEventLoadFlashcards());
+                  }
+                : null,
+          ),
+          IconButton(
+            icon: Icon(Icons.replay),
+            tooltip: 'Reset learning',
+            onPressed: hasFlashcards
+                ? () async {
+                    final bool shouldResetDeck =
+                        await _dialogShouldResetDeck(context);
+                    if (shouldResetDeck) {
+                      editDeckBloc.dispatch(EDEventResetFlashcardsGroup());
+                    }
+                  }
+                : null,
+          ),
+        ];
 
-        if (state is EDStateFlashcards) {
-          return _buildFlashcardList(context, state.flashcards);
-        }
+        final appBar = AppBar(
+          title: Text(editDeckBloc.deck.title),
+          actions: actions,
+        );
+
+        final scaffold = Scaffold(
+          appBar: appBar,
+          body: _buildBody(context, state),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async => await _onCreateFlashcard(context),
+            child: Icon(Icons.note_add),
+          ),
+        );
+
+        return scaffold;
       },
     );
+  }
+
+  Widget _buildBody(BuildContext context, EDState state) {
+    if (state is EDStateLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (state is EDStateFlashcards) {
+      return _buildFlashcardList(context, state.flashcards);
+    }
   }
 
   Widget _buildFlashcardList(BuildContext context, List<Flashcard> flashcards) {
@@ -103,17 +114,20 @@ class _EditDeckPageState extends State<EditDeckPage> {
             leading: Icon(Icons.note, color: Theme.of(context).accentColor),
             trailing: Icon(Icons.offline_bolt,
                 color: proficiencyColors[proficiencyColorIndex]),
-            title: Text(
-              flashcards[index].question,
-              overflow: TextOverflow.ellipsis,
+            title: MarkdownBody(
+              data: flashcards[index].question,
             ),
             subtitle: Text(
-                'Box ${flashcards[index].group + 1}/${editDeckBloc.deck.maxGroup}'),
+                'Box ${flashcards[index].group + 1} in ${editDeckBloc.deck.maxGroup}'),
             onTap: () => _onEditFlashcard(context, flashcards[index]),
           );
           return Dismissible(
             key: Key('flashcard ${flashcards[index].id}'),
             child: tile,
+            onDismissed: (direction) =>
+                _onFlashcardDismissed(flashcards[index], direction),
+            confirmDismiss: (direction) =>
+                _confirmFlashcardDismiss(context, direction),
             background: Container(
                 alignment: AlignmentDirectional.centerStart,
                 color: Colors.red,
@@ -128,10 +142,6 @@ class _EditDeckPageState extends State<EditDeckPage> {
                   padding: const EdgeInsets.all(16.0),
                   child: Icon(Icons.delete_forever, color: Colors.white),
                 )),
-            onDismissed: (direction) =>
-                _onFlashcardDismissed(flashcards[index], direction),
-            confirmDismiss: (direction) =>
-                _confirmFlashcardDismiss(context, direction),
           );
         } else {
           return SizedBox(height: 80.0);
@@ -178,13 +188,13 @@ class _EditDeckPageState extends State<EditDeckPage> {
   Future<bool> _confirmFlashcardDismiss(
       BuildContext context, DismissDirection direction) async {
     final dialogMessage =
-        'Are you sure you want to remove this flashcard from the deck?';
+        'This will remove this flashcard from the deck.';
     return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
-          title: Text('Delete flashcard'),
+          title: const Text('Delete flashcard?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -194,11 +204,11 @@ class _EditDeckPageState extends State<EditDeckPage> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text('Yes'),
+              child: const Text('ACCEPT'),
               onPressed: () => Navigator.of(ctx).pop(true),
             ),
             FlatButton(
-              child: const Text('No'),
+              child: const Text('CANCEL'),
               onPressed: () => Navigator.of(ctx).pop(false),
             ),
           ],
@@ -213,21 +223,21 @@ class _EditDeckPageState extends State<EditDeckPage> {
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
-          title: Text('Reset deck'),
+          title: const Text('Unlearn flashcards?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Do you want to reset this deck to its initial stage?'),
+                Text('This will reset all deck\'s flashcards back to the first box.'),
               ],
             ),
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text('Yes'),
+              child: const Text('ACCEPT'),
               onPressed: () => Navigator.of(ctx).pop(true),
             ),
             FlatButton(
-              child: const Text('No'),
+              child: const Text('CANCEL'),
               onPressed: () => Navigator.of(ctx).pop(false),
             ),
           ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../bloc/leitner_system_bloc.dart';
 import '../model/deck.dart';
@@ -47,24 +48,13 @@ class _LeitnerSystemPageState extends State<LeitnerSystemPage> {
 
     final flashcard = state.currentFlashcard;
 
-    final questionFontSize = 12.0 + (1.0 - (flashcard.question.length / 256)) * 12.0;
-    final answerFontSize = 12.0 + (1.0 - (flashcard.answer.length / 256)) * 12.0;
-
-    final question = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Text(
-        flashcard.question,
-        style: TextStyle(fontSize: questionFontSize),
-        textAlign: TextAlign.center,
-      ),
+    final question = Markdown(
+      data: flashcard.question,
     );
     final answer = state.isAnswerVisible
-        ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              flashcard.answer,
-              style: TextStyle(fontSize: answerFontSize),
-              textAlign: TextAlign.center,
+        ? Expanded(
+            child: Markdown(
+              data: flashcard.answer,
             ),
           )
         : FlatButton(
@@ -99,9 +89,9 @@ class _LeitnerSystemPageState extends State<LeitnerSystemPage> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Expanded(child: Center(child: SingleChildScrollView(child: question))),
+        Expanded(child: question),
         Divider(),
-        Expanded(child: Center(child: SingleChildScrollView(child: answer))),
+        answer,
         bottom,
         SizedBox(height: 5.0),
       ],

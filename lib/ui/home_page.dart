@@ -95,43 +95,39 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(16.0),
             child: Icon(Icons.delete_forever, color: Colors.white),
           )),
-      onDismissed: (direction) =>
-          _onDeckDismissed(deck, direction),
+      onDismissed: (direction) => _onDeckDismissed(deck, direction),
       confirmDismiss: (direction) =>
           _confirmDeckDismiss(context, direction, deck),
     );
   }
 
-  void _onDeckDismissed(
-      Deck deck, DismissDirection direction) async {
+  void _onDeckDismissed(Deck deck, DismissDirection direction) async {
     await widget.deckRepository.remove(deck.id);
-    homeBloc.dispatch(LoadDecksHomeEvent());
+    homeBloc.dispatch(HomeEventDeleteDeck(deck));
   }
 
   Future<bool> _confirmDeckDismiss(
       BuildContext context, DismissDirection direction, Deck deck) async {
-    final dialogMessage =
-        'Are you sure you want to delete this deck?';
     return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
-          title: Text('Delete ${deck.title}'),
+          title: Text('Delete ${deck.title}?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text(dialogMessage),
+                const Text('This will remove this deck and its flashcards.'),
               ],
             ),
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text('Yes'),
+              child: const Text('ACCEPT'),
               onPressed: () => Navigator.of(ctx).pop(true),
             ),
             FlatButton(
-              child: const Text('No'),
+              child: const Text('CANCEL'),
               onPressed: () => Navigator.of(ctx).pop(false),
             ),
           ],
@@ -157,7 +153,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    homeBloc = HomeBloc(widget.deckRepository)..dispatch(LoadDecksHomeEvent());
+    homeBloc = HomeBloc(widget.deckRepository, widget.flashcardRepository)
+      ..dispatch(LoadDecksHomeEvent());
   }
 
   @override
