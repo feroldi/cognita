@@ -27,7 +27,7 @@ class DeckSqliteRepository implements DeckRepository {
     return results.map<Deck>((value) => Deck.fromMap(value)).toList();
   }
 
-  Future<void> store(Deck deck) async {
+  Future<Deck> store(Deck deck) async {
     if (deck.id != null) {
       await database.transaction((tx) async {
         final result = await tx.query(
@@ -46,8 +46,10 @@ class DeckSqliteRepository implements DeckRepository {
           await tx.insert('decks', deck.toMap());
         }
       });
+      return deck.copyWith();
     } else {
-      await database.insert('decks', deck.toMap());
+      final deckId = await database.insert('decks', deck.toMap());
+      return deck.copyWith(id: deckId);
     }
   }
 

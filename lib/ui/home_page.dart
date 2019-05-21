@@ -8,6 +8,11 @@ import '../repository/flashcard_repository.dart';
 import '../ui/create_deck_page.dart';
 import '../ui/edit_deck_page.dart';
 
+enum HomeMenuAction {
+  importData,
+  exportData,
+}
+
 class HomePage extends StatefulWidget {
   final DeckRepository deckRepository;
   final FlashcardRepository flashcardRepository;
@@ -25,6 +30,29 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final appBar = AppBar(
       title: const Text('Cognita'),
+      actions: <Widget>[
+        PopupMenuButton<HomeMenuAction>(
+          onSelected: (HomeMenuAction action) async {
+            if (action == HomeMenuAction.exportData) {
+              homeBloc.dispatch(HomeEventExportData());
+            }
+
+            if (action == HomeMenuAction.importData) {
+              homeBloc.dispatch(HomeEventImportData());
+            }
+          },
+          itemBuilder: (context) => <PopupMenuEntry<HomeMenuAction>>[
+            const PopupMenuItem<HomeMenuAction>(
+              value: HomeMenuAction.importData,
+              child: const Text('Import data'),
+            ),
+            const PopupMenuItem<HomeMenuAction>(
+              value: HomeMenuAction.exportData,
+              child: const Text('Export data'),
+            ),
+          ],
+        ),
+      ],
     );
 
     final scaffold = Scaffold(

@@ -31,7 +31,7 @@ class FlashcardSqliteRepository implements FlashcardRepository {
     return results.map<Flashcard>((value) => Flashcard.fromMap(value)).toList();
   }
 
-  Future<void> store(Flashcard flashcard) async {
+  Future<Flashcard> store(Flashcard flashcard) async {
     if (flashcard.id != null) {
       await database.transaction((tx) async {
         final result = await tx.query(
@@ -49,9 +49,11 @@ class FlashcardSqliteRepository implements FlashcardRepository {
         } else {
           await tx.insert('flashcards', flashcard.toMap());
         }
+        return flashcard.copyWith();
       });
     } else {
-      await database.insert('flashcards', flashcard.toMap());
+      final flashcardId = await database.insert('flashcards', flashcard.toMap());
+      return flashcard.copyWith(id: flashcardId);
     }
   }
 
