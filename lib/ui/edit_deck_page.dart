@@ -209,12 +209,12 @@ class _EditDeckPageState extends State<EditDeckPage> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text('ACCEPT'),
-              onPressed: () => Navigator.of(ctx).pop(true),
-            ),
-            FlatButton(
               child: const Text('CANCEL'),
               onPressed: () => Navigator.of(ctx).pop(false),
+            ),
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(ctx).pop(true),
             ),
           ],
         );
@@ -233,18 +233,18 @@ class _EditDeckPageState extends State<EditDeckPage> {
             child: ListBody(
               children: <Widget>[
                 Text(
-                    'This will reset all deck\'s flashcards back to the first box.'),
+                    'This will bring the flashcards back to the first box.'),
               ],
             ),
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text('ACCEPT'),
-              onPressed: () => Navigator.of(ctx).pop(true),
-            ),
-            FlatButton(
               child: const Text('CANCEL'),
               onPressed: () => Navigator.of(ctx).pop(false),
+            ),
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(ctx).pop(true),
             ),
           ],
         );

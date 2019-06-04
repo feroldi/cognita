@@ -151,12 +151,12 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: const Text('ACCEPT'),
-              onPressed: () => Navigator.of(ctx).pop(true),
-            ),
-            FlatButton(
               child: const Text('CANCEL'),
               onPressed: () => Navigator.of(ctx).pop(false),
+            ),
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(ctx).pop(true),
             ),
           ],
         );
